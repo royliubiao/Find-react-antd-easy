@@ -15,7 +15,7 @@ import { CreateFormConfig } from '../../utils'
 
 const { useState, useEffect } = React
 
-const Index: FC<onlineForm> = (props) => {
+const Index: React.FC<onlineForm> = (props) => {
   const [form] = Form.useForm();
   /** props---------------------------------- */
   const {
@@ -132,11 +132,12 @@ const Index: FC<onlineForm> = (props) => {
     let isAsync = false
     let hasCheck = false //是否要通过手机号查询
     let checkPhoneItem = null
-
+    let FindConfig = null
 
     /** 获取config */
     if (CreateFormConfig.use()) { //如果有值
-      setConfig(CreateFormConfig.use())
+      console.log('获取config-------------', CreateFormConfig.use())
+      FindConfig = CreateFormConfig.use()
     }
 
     items && items.forEach(async (item: formItem) => {
@@ -374,7 +375,7 @@ const Index: FC<onlineForm> = (props) => {
 
 
       /** 如果有effect */
-      if (item.effect && config.Api) {
+      if (item.effect && FindConfig) {
         let params = Object.entries(item.effect.effectParams)
         let relyNum = params.length
         let newParams = {} //回调接口需要的参数
@@ -414,7 +415,7 @@ const Index: FC<onlineForm> = (props) => {
           if (Object.entries(newParams).length === relyNum && !effectData.has(JSON.stringify(newParams))) {
             newParams = { ...newParams, ...item.effect.defaultParams }
 
-            const data = await config.Api[item.effect.effectName](newParams)
+            const data = await FindConfig.Api[item.effect.effectName](newParams)
             //如果有res值字段
             item.options = item.effect.resName ? data[item.effect.resName] : data
             console.log('如果所依赖项都是有值的 执行effect', data)
@@ -444,6 +445,7 @@ const Index: FC<onlineForm> = (props) => {
         setFilterName(filterNames)
         setEffects(effect)
         setActions(actions)
+        setConfig({ ...config, ...FindConfig })
       })
     } else {
       setvisible(visibles)
@@ -453,12 +455,13 @@ const Index: FC<onlineForm> = (props) => {
       setFilterName(filterNames)
       setEffects(effect)
       setActions(actions)
+      setConfig({ ...config, ...FindConfig })
     }
 
 
     //如果是查看详情
-    if (checkPhoneItem && config.Api) {
-      return RunCheck(checkPhoneItem.value, checkPhoneItem, visibles, effect, actions)
+    if (checkPhoneItem && FindConfig) {
+      return RunCheck(checkPhoneItem.value, FindConfig, checkPhoneItem, visibles, effect, actions)
     }
 
     console.log('初始化formItems🍺🍺🍺🍺🍺🍺🍺', newItems, fields, visibles)
@@ -913,7 +916,7 @@ const Index: FC<onlineForm> = (props) => {
     /** 执行actions */
     actions[change[0][0]] && runActions(change, allValue)
     /** 执行check */
-    checkPhoneNumber && checkPhoneNumber[change[0][0]] && RunCheck(change)
+    checkPhoneNumber && checkPhoneNumber[change[0][0]] && config.Api && RunCheck(change, config)
     /** 执行effect */
     effects.get(change[0][0]) && runEffects(change)
 
@@ -955,7 +958,8 @@ const Index: FC<onlineForm> = (props) => {
     })
   }
   /** 执行check */
-  const RunCheck = async (value, checkApi?, visibles?, effect?, actions?) => {
+  const RunCheck = async (value, FindConfig, checkApi?, visibles?, effect?, actions?,) => {
+    alert(1)
     let phone = checkApi ? value : value[0][1]
     let fields = []
     let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
@@ -980,7 +984,7 @@ const Index: FC<onlineForm> = (props) => {
         closeModal,
         setValue,
       } = checkApi || checkPhoneNumber[value[0][0]] && checkPhoneNumber[value[0][0]]
-      await config.Api[api]({
+      await FindConfig.Api[api]({
         [paramKey]: phone,
         callBack: async (res) => {
 
