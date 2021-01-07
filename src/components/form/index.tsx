@@ -98,7 +98,13 @@ const Index: FC<onlineForm> = (props) => {
   /** formConfig */
   const [config, setConfig] = useState<any>({
     /** 所有api接口 */
-    Api: null
+    Api: null,
+    /** 获取token */
+    GetToken: null,
+    /** 获取富文本token */
+    GetPublicToken: null,
+    /** 云服务器地址 如七牛云 */
+    CloudUrl: '',
   })
 
 
@@ -469,6 +475,7 @@ const Index: FC<onlineForm> = (props) => {
 
   /** Form验证通过的回调 */
   const onFinish = fieldsValue => {
+    let isUpload = true
     let values = { ...fieldsValue }
     /** formList过滤gourp的空对象 */
     filterNames.map((item) => {
@@ -550,9 +557,10 @@ const Index: FC<onlineForm> = (props) => {
         let newfiles = []
         let uploads = fieldsValue[item.name]
 
-        if (!uploads.length) {
+        if (!uploads || !uploads.length) {
           return
         }
+
         uploads.map(file => {
           //如果没有上传完毕
           if (!file.response) {
@@ -672,6 +680,12 @@ const Index: FC<onlineForm> = (props) => {
       }
     })
 
+    //如果正在上传
+    if (!isUpload) {
+      return message.warning({
+        content: '文件正在上传中~',
+      })
+    }
     // return console.log('values--------------', values)
 
     onSubmit(values, formItems, state.fields)
@@ -1122,7 +1136,7 @@ const Index: FC<onlineForm> = (props) => {
               }
               //如果是有些字段不能赋值
               else if (checkApi) {
-                let field = infos[item.name] ? infos[item.name] : (infos[item.name] === '' || infos[item.name] === 0 || infos[item.name] === false) ? infos[item.name] : (item.type === 'textare' || item.type === 'input' || item.type === 'phone' || item.type === 'number' || item.type === 'radio' || item.type === 'treeselect' || item.type === 'select') ? null : []
+                let field = infos[item.name] ? infos[item.name] : (infos[item.name] === '' || infos[item.name] === 0 || infos[item.name] === false) ? infos[item.name] : (item.type === 'textarea' || item.type === 'input' || item.type === 'phone' || item.type === 'number' || item.type === 'radio' || item.type === 'treeselect' || item.type === 'select') ? null : []
                 // console.log('如果是有些字段不能赋值', infos, item, field)
                 /** 如果详情是空值 但自身有值 */
                 if (!field && item.value) {
@@ -1134,7 +1148,7 @@ const Index: FC<onlineForm> = (props) => {
                 })
               } else {
                 if (!item.noValue) {
-                  let field = infos[item.name] ? infos[item.name] : (infos[item.name] === '' || infos[item.name] === 0 || infos[item.name] === false) ? infos[item.name] : (item.type === 'textare' || item.type === 'input' || item.type === 'phone' || item.type === 'number' || item.type === 'radio' || item.type === 'treeselect' || item.type === 'select') ? null : []
+                  let field = infos[item.name] ? infos[item.name] : (infos[item.name] === '' || infos[item.name] === 0 || infos[item.name] === false) ? infos[item.name] : (item.type === 'textarea' || item.type === 'input' || item.type === 'phone' || item.type === 'number' || item.type === 'radio' || item.type === 'treeselect' || item.type === 'select') ? null : []
                   /** 如果详情是控制 但自身有值 */
                   if (!field && item.value) {
                     field = item.value
